@@ -1,60 +1,46 @@
-import os
-import sys
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
-from sqlalchemy.orm import relationship, declarative_base
-from sqlalchemy import create_engine
-from datetime import datetime
-from eralchemy2 import render_er
+from flask_sqlalchemy import SQLAlchemy
 
-Base = declarative_base()
+db = SQLAlchemy()
 
-class User(Base):
+class User(db.Model):
     __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
-    username = Column(String(50), nullable=False, unique=True)
-    firstname = Column(String(50), nullable=False)
-    lastname = Column(String(50), nullable=False)
-    email = Column(String(100), nullable=False, unique=True)
-    password = Column(String(250), nullable=False)
-    subscription_date = Column(DateTime, default=datetime.utcnow)
-    
-    favorites = relationship('Favorite', backref='user', lazy=True)
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    firstname = db.Column(db.String(50), nullable=False)
+    lastname = db.Column(db.String(50), nullable=False)
+    password = db.Column(db.String(250), nullable=False)
+    subscription_date = db.Column(db.DateTime)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    favorites = db.relationship('Favorite', backref='user', lazy=True)
 
-class Character(Base):
+class Character(db.Model):
     __tablename__ = 'character'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
-    birth_year = Column(String(20))
-    gender = Column(String(20))
-    height = Column(String(20))
-    skin_color = Column(String(50))
-    eye_color = Column(String(50))
-    
-    favorited_by = relationship('Favorite', backref='character', lazy=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    birth_year = db.Column(db.String(20))
+    gender = db.Column(db.String(20))
+    height = db.Column(db.String(20))
+    skin_color = db.Column(db.String(50))
+    eye_color = db.Column(db.String(50))
+    favorites = db.relationship('Favorite', backref='character', lazy=True)
 
-class Planet(Base):
+class Planet(db.Model):
     __tablename__ = 'planet'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
-    climate = Column(String(50))
-    terrain = Column(String(50))
-    population = Column(String(50))
-    diameter = Column(String(50))
-    orbital_period = Column(String(50))
-    
-    favorited_by = relationship('Favorite', backref='planet', lazy=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    climate = db.Column(db.String(50))
+    diameter = db.Column(db.String(50))
+    orbital_period = db.Column(db.String(50))
+    population = db.Column(db.String(50))
+    terrain = db.Column(db.String(50))
+    favorites = db.relationship('Favorite', backref='planet', lazy=True)
 
-class Favorite(Base):
+class Favorite(db.Model):
     __tablename__ = 'favorite'
-    id = Column(Integer, primary_key=True)
-    
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    character_id = Column(Integer, ForeignKey('character.id'), nullable=True)
-    planet_id = Column(Integer, ForeignKey('planet.id'), nullable=True)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    character_id = db.Column(db.Integer, db.ForeignKey('character.id'))
+    planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'))
 
-try:
-    result = render_er(Base, 'diagram.png')
-    print("¡Éxito! El archivo diagram.png de Star Wars ha sido generado correctamente.")
-except Exception as e:
-    print("Hubo un problema generando el diagrama")
-    raise e
+    def __repr__(self):
+        return f'<Favorite {self.id}>'
